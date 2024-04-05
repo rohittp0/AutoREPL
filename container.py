@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import docker
 from docker import DockerClient
@@ -63,7 +64,7 @@ class Container:
         return self.python_file.readlines()
 
     @python_src.setter
-    def python_src(self, value: str):
+    def python_src(self, value: List[str]):
         self.python_file.seek(0)
         self.python_file.writelines(value)
         self.python_file.truncate()
