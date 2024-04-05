@@ -30,17 +30,20 @@ def try_fix_code(container, model):
                 container.python_src = src
 
 
-def main():
+def run(python_file_path, requirements_file_path):
     model = Lama(True)
 
-    python_file_path = "test/test.py"
-    with Container("test/requirements.txt", python_file_path) as container:
-        if not try_fix_code(container, model):
+    with Container(requirements_file_path, python_file_path) as container:
+        ret = try_fix_code(container, model)
+
+        if not ret:
             print("Failed to fix the code")
         else:
             print("Code fixed successfully")
 
+        return ret
+
 
 if __name__ == "__main__":
     load_dotenv()
-    main()
+    run("volume/test.py", "volume/requirements.txt")
