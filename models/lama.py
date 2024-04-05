@@ -12,8 +12,10 @@ class Lama(Model):
         super().__init__(preserve_history)
 
         try:
-            models = ollama.list()
-            if self.model not in models:
+            models = ollama.list()["models"]
+            models = [model["name"] for model in models]
+
+            if self.model not in models and f"{self.model}:latest" not in models:
                 self._pull_model()
         except Exception as e:
             print(f"Error: unable to connect to Ollama: \n{e}")

@@ -16,6 +16,8 @@ class Model:
         "```python\n"
         "{The fixed code}\n"
         "```\n"
+        "Where the {The fixed code} is the code with the error fixed."
+        " This should contain the entire code and nothing else."
         "The format of the input and output is important. Make sure to follow the format exactly."
         " If you are unable to fix the code, your response should be an empty code block (```python\n\n```."
     )
@@ -42,6 +44,10 @@ class Model:
             self.history.append({"role": "assistant", "content": response})
 
         return self._from_response(response).strip()
+
+    def feedback(self, feedback: str):
+        if self.preserve_history:
+            self.history.append({"role": "user", "content": feedback})
 
     @staticmethod
     def _to_prompt(code: str, error: str):

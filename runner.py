@@ -1,33 +1,50 @@
 from container import Container
 from models.lama import Lama
+from models.model import Model
 from parser import parse_stack_trace, get_function_index
 
 from dotenv import load_dotenv
 
 
-def try_fix_code(container, model):
+def try_fix_code(container: Container, model: Model):
     while True:
+        print("Running the code")
         output, status = container.run_python()
 
         if status == 0:
             return True
 
         stack_frames = parse_stack_trace(output)
-        for frame in stack_frames:
-            if frame["file"] == container.container_paths["python"]:
-                src = container.python_src
-                function_start, function_end = get_function_index(src, frame)
+        file_frames = filter(lambda f: f["file"] == container.container_paths["python"], stack_frames)
+        frame = list(filter(lambda f: f["function"] is not None, file_frames))[0]
 
-                print(f"Error in {frame['function']} at line {frame['line'] + 1}")
+        if not frame:
+            return False
 
-                function_src = "".join(src[function_start:function_end])
-                fixed_code = model.query(function_src, output)
+        src = container.python_src
+        function_start, function_end = get_function_index(src, frame)
 
-                if not fixed_code:
-                    return False
+        print(f"Error in {frame['function']} at line {frame['line'] + 1}")
+        print(output)
 
-                src = src[:function_start] + fixed_code.split("\n") + src[function_end:]
-                container.python_src = src
+        function_src = "".join(src[function_start:function_end])
+        fixed_code = model.query(function_src, output)
+
+        if not fixed_code:
+            return False
+
+        print("Fixed code:\n", fixed_code, "\n\n")
+
+        if "def " + frame["function"] not in fixed_code:
+            print("Function name changed. Skipping fix")
+            model.feedback("Response rejected due to incorrect format. Please try again.")
+            continue
+
+        fixed_code = fixed_code if fixed_code.endswith("\n") else fixed_code + "\n"
+
+        src = src[:function_start] + [fixed_code] + src[function_end:]
+        container.python_src = src
+
 
 
 def run(python_file_path, requirements_file_path):

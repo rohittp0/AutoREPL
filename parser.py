@@ -33,6 +33,9 @@ def get_function_index(src: List[str], stack_frame: StackFrame) -> Tuple[int, in
     function_def = f"def {stack_frame['function']}("
     contained_line = stack_frame["line"]
 
+    if contained_line >= len(src):
+        raise ValueError("Line number out of bounds "+str(contained_line))
+
     # Find the start of the function by looking for the line that
     # matches the function name starting from the line and going up
 
