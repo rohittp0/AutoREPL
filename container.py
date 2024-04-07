@@ -61,6 +61,7 @@ class Container:
 
     @property
     def python_src(self):
+        self.python_file.seek(0)
         return self.python_file.readlines()
 
     @python_src.setter

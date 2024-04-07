@@ -28,23 +28,30 @@ def try_fix_code(container: Container, model: Model):
         print(output)
 
         function_src = "".join(src[function_start:function_end])
-        fixed_code = model.query(function_src, output)
+        fixed_code = None
+
+        for i in range(3):
+            fixed_code = model.query(function_src, output)
+            print(f"Fixed code (Attempt - {i}):\n", fixed_code, "\n\n")
+
+            if not fixed_code:
+                return False
+
+            if "def " + frame["function"] in fixed_code:
+                break
+
+            model.feedback("Response rejected due to incorrect format. "
+                           "Please try again by providing the complete function.")
+            print("Response rejected due to incorrect format. ")
+            fixed_code = None
 
         if not fixed_code:
             return False
-
-        print("Fixed code:\n", fixed_code, "\n\n")
-
-        if "def " + frame["function"] not in fixed_code:
-            print("Function name changed. Skipping fix")
-            model.feedback("Response rejected due to incorrect format. Please try again.")
-            continue
 
         fixed_code = fixed_code if fixed_code.endswith("\n") else fixed_code + "\n"
 
         src = src[:function_start] + [fixed_code] + src[function_end:]
         container.python_src = src
-
 
 
 def run(python_file_path, requirements_file_path):
