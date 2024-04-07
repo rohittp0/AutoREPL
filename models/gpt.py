@@ -3,17 +3,18 @@ from typing import List
 
 from openai import OpenAI
 
+from config import Config
 from models.model import Model
 
 
 class GPT(Model):
     client = None
-    model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+    model = Config().openai_model
 
     def __new__(cls, *args, **kwargs):
         if cls.client is None:
             cls.client = OpenAI(
-                api_key=os.getenv("OPENAI_API_KEY"),
+                api_key=Config().openai_api_key,
 
             )
         return super().__new__(cls)

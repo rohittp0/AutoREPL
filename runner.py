@@ -1,9 +1,8 @@
 from container import Container
+from models.gpt import GPT
 from models.lama import Lama
 from models.model import Model
 from parser import parse_stack_trace, get_function_index
-
-from dotenv import load_dotenv
 
 
 def try_fix_code(container: Container, model: Model):
@@ -69,5 +68,4 @@ def run(python_file_path, requirements_file_path):
 
 
 if __name__ == "__main__":
-    load_dotenv()
     run("volume/test.py", "volume/requirements.txt")
